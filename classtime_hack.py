@@ -92,25 +92,19 @@ def get_questions(url):
         if count == 5: 
             test=True
         
-        
+        ## get additional info
+        additional_info = get_additional_info(driver)
+        if additional_info[1]: result+=additional_info[0]
 
         ### try to find table; function returns tuple[str, bool] - (result, found_or_not)
         table = get_table_contents(driver, count)
         if table[1]:
-            ## get additional info
-            additional_info = get_additional_info(driver, table[2])
-            if additional_info[1]: result += additional_info[0]
-
             ### add table contents
             result += table[0]
         else:
-            answer_options = get_options(driver, count)
-
-            ### add aditional text, if amount of found tags is more, than answer options specifically
-            additional_info = get_additional_info(driver, answer_options[1])
-            if additional_info[1]: result += additional_info[0]
             ### Add answer options to result if possible
-            result += answer_options[0]
+            answer_options = get_options(driver, count)
+            result += answer_options
                                                 
 
         ### fetch image if user requests

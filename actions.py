@@ -30,9 +30,8 @@ def get_title(driver: webdriver.Chrome, count) -> str:
 
 
 ### Add answer options to result if possible
-def get_options(driver:webdriver.Chrome, count) -> tuple[str, int]:
+def get_options(driver:webdriver.Chrome, count) -> str:
 
-    amount = 0
     result = ''
 
     try:
@@ -42,17 +41,16 @@ def get_options(driver:webdriver.Chrome, count) -> tuple[str, int]:
 
         answer_options = driver.find_elements(By.CSS_SELECTOR, 'div[data-testid="questions-answers-list"] span[data-text="true"]')
 
-        amount = len(answer_options)
 
         alphabet = "abcdefghijklmnopqrstuvwxyz"
-        for i in range(amount):
+        for i in range(len(answer_options)):
             result += f'     {alphabet[i%27]}) {answer_options[i].get_attribute("innerHTML")}\n'
 
     except:
         print(f"WARNING: No answer options found for question #{count}")
-        return ("      Unknown type of input (Most likely text input)\n", 0)
+        return "      Unknown type of input (Most likely text input)\n"
 
-    return (result, amount)
+    return result
 
 
 
@@ -99,7 +97,7 @@ def fetch_image(driver:webdriver.Chrome, count) -> None:
 
 
 
-def get_table_contents(driver:webdriver.Chrome, count) -> tuple[str, bool, int]:
+def get_table_contents(driver:webdriver.Chrome, count) -> tuple[str, bool]:
     result = ''
 
     try:
@@ -122,18 +120,18 @@ def get_table_contents(driver:webdriver.Chrome, count) -> tuple[str, bool, int]:
         df = pd.DataFrame(data[1:], columns=data[0])
         
 
-        return (df.to_string(), True, len(rows))
+        return (df.to_string(), True)
 
         
 
 
     except:
-        return (result, False, 0)
+        return (result, False)
     
 
 
 
-def get_additional_info(driver:webdriver.Chrome, options_amount) -> tuple[str, bool]:
+def get_additional_info(driver:webdriver.Chrome) -> tuple[str, bool]:
 
     result = ''
 
@@ -146,14 +144,11 @@ def get_additional_info(driver:webdriver.Chrome, options_amount) -> tuple[str, b
 
         data_fields = driver.find_elements(By.CSS_SELECTOR, f'div[class="_8ae271eec1188b7ee372cb8b781a3c19"] div[spellcheck="false"][contenteditable="false"][style="{style}"] span[data-text="true"]')
 
-        if len(data_fields) > options_amount:
 
-            #additional_info = additional_info_div.find_element(By.CSS_SELECTOR, 'span[data-text="true"]')
-                                           # additionla info is always first
-            result += f'  Additional info: {data_fields[0].get_attribute("innerHTML")}\n'
+        #additional_info = additional_info_div.find_element(By.CSS_SELECTOR, 'span[data-text="true"]')
+                                        # additionla info is always first
+        result += f'  Additional info: {data_fields[0].get_attribute("innerHTML")}\n'
         
-        else:
-            return ('', False)
 
     except:
         return ('', False)
