@@ -3,7 +3,8 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import pandas as pd, sys
+import sys
+import time
 
 from actions import *
 
@@ -26,8 +27,17 @@ ARGS = parse_args()
 
 
 
+def get_browser_options() -> webdriver.ChromeOptions :
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")
+
+    return options
+
+
 def get_questions(url):
-    driver = webdriver.Chrome()
+
+
+    driver = webdriver.Chrome(options=get_browser_options())
     driver.get(url)
     
 
@@ -74,16 +84,23 @@ def get_questions(url):
         ### Add question title if possible
         result += get_title(driver, count)
         
+        ### add aditional text, that is saved in another tag
+        additional_info = get_additional_info(driver, count)
+        result += additional_info[0]
         
-        
-        ### Add answer options to result if possible
-        result += get_options(driver, count)
+        ### try to find table; function returns tuple[str, bool] - (result, found_or_not)
+        table = get_table_contents(driver, count)
+        if table[1]:
+            ### add table contents
+            result += table[0]
+        else:
+            ### Add answer options to result if possible
+            result += get_options(driver, count, additional_info[1])
+                                                #↑ need this because additional info and answer options have same identifier
 
         ### fetch image if user requests
         if ARGS["images"]:
             fetch_image(driver, count)
-
-
 
 
 
@@ -96,10 +113,10 @@ def get_questions(url):
 
 def main():
     url = input("Provide a link to 'Classtime' test: ")
-    print(get_questions("https://www.classtime.com/code/MENFTP"))
+    print(get_questions("https://www.classtime.com/code/ADTXRM"))
 
 
 if __name__ == "__main__":
     #print(ARGS["images"])
-    ARGS["images"] = True
+    #ARGS["images"] = True
     main()
