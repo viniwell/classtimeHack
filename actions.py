@@ -30,26 +30,29 @@ def get_title(driver: webdriver.Chrome, count) -> str:
 
 
 ### Add answer options to result if possible
-def get_options(driver:webdriver.Chrome, count, additional_info_on_page) -> str:
+def get_options(driver:webdriver.Chrome, count) -> tuple[str, int]:
 
+    amount = 0
     result = ''
 
     try:
         WebDriverWait(driver, 5).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, 'span[data-text="true"]'))
+            EC.presence_of_element_located((By.CSS_SELECTOR, 'div[data-testid="questions-answers-list"] span[data-text="true"]'))
         )
 
-        answer_options = driver.find_elements(By.CSS_SELECTOR, 'span[data-text="true"]')
-        if additional_info_on_page: answer_options = answer_options[1:] # need this because additional info and answer options have same identifier
+        answer_options = driver.find_elements(By.CSS_SELECTOR, 'div[data-testid="questions-answers-list"] span[data-text="true"]')
 
-        for option in answer_options:
-            result += f'        {option.get_attribute("innerHTML")}\n'
+        amount = len(answer_options)
+
+        alphabet = "abcdefghijklmnopqrstuvwxyz"
+        for i in range(amount):
+            result += f'     {alphabet[i%27]}) {answer_options[i].get_attribute("innerHTML")}\n'
 
     except:
         print(f"WARNING: No answer options found for question #{count}")
-        return "Unknown type of input (Most likely text input)\n"
+        return ("      Unknown type of input (Most likely text input)\n", 0)
 
-    return result
+    return (result, count)
 
 
 
@@ -130,20 +133,27 @@ def get_table_contents(driver:webdriver.Chrome, count) -> tuple[str, bool]:
 
 
 
-def get_additional_info(driver:webdriver.Chrome, count) -> tuple[str, bool]:
+def get_additional_info(driver:webdriver.Chrome, options_amount) -> tuple[str, bool]:
 
     result = ''
 
     try:
+
+        style = """outline: none; user-select: text; white-space: pre-wrap; overflow-wrap: break-word;"""
         WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, 'div[data-contents="true"]'))
+            EC.presence_of_element_located((By.CSS_SELECTOR, f'div [spellcheck="false"][contenteditable="false"][style="{style}"] span[data-text="true"]'))
         )
 
-        additional_info_div = driver.find_element(By.CSS_SELECTOR, 'div[data-contents="true"]')
+        data_fields = driver.find_elements(By.CSS_SELECTOR, f'div [spellcheck="false"][contenteditable="false"][style="{style}"] span[data-text="true"]')
 
-        additional_info = additional_info_div.find_element(By.CSS_SELECTOR, 'span[data-text="true"]')
+        if len(data_fields) > options_amount:
+
+            #additional_info = additional_info_div.find_element(By.CSS_SELECTOR, 'span[data-text="true"]')
+                                           # additionla info is always first
+            result += f'  Additional info: {data_fields[0].get_attribute("innerHTML")}\n'
         
-        result += f'  Additional info: {additional_info.get_attribute("innerHTML")}\n'
+        else:
+            return ('', False)
 
     except:
         return ('', False)

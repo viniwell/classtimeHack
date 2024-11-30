@@ -30,6 +30,7 @@ ARGS = parse_args()
 def get_browser_options() -> webdriver.ChromeOptions :
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")
+    options.add_argument("--log-level=3")
 
     return options
 
@@ -80,27 +81,40 @@ def get_questions(url):
 
     while True:
         count+=1
+
+        result += "------------------------------------------\n\n"
         
         ### Add question title if possible
         result += get_title(driver, count)
         
-        ### add aditional text, that is saved in another tag
-        additional_info = get_additional_info(driver, count)
-        result += additional_info[0]
         
+       
+        if count == 5: 
+            test=True
+        
+        
+
         ### try to find table; function returns tuple[str, bool] - (result, found_or_not)
         table = get_table_contents(driver, count)
         if table[1]:
             ### add table contents
             result += table[0]
         else:
+            answer_options = get_options(driver, count)
+
+            ### add aditional text, if amount of found tags is more, than answer options specifically
+            additional_info = get_additional_info(driver, answer_options[1])
+            if additional_info[1]: result += additional_info[0]
             ### Add answer options to result if possible
-            result += get_options(driver, count, additional_info[1])
-                                                #↑ need this because additional info and answer options have same identifier
+            result += answer_options[0]
+                                                
 
         ### fetch image if user requests
         if ARGS["images"]:
             fetch_image(driver, count)
+
+
+        result += "\n\n------------------------------------------\n\n"
 
 
 
@@ -112,8 +126,10 @@ def get_questions(url):
 
 
 def main():
-    url = input("Provide a link to 'Classtime' test: ")
-    print(get_questions("https://www.classtime.com/code/ADTXRM"))
+    #url = input("Provide a link to 'Classtime' test: ")
+    url = "https://www.classtime.com/code/ZT6MPI" ## history 
+    #url = "https://www.classtime.com/code/Q9RAAY" ## geogr
+    print(get_questions(url))
 
 
 if __name__ == "__main__":
