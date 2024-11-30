@@ -52,7 +52,7 @@ def get_options(driver:webdriver.Chrome, count) -> tuple[str, int]:
         print(f"WARNING: No answer options found for question #{count}")
         return ("      Unknown type of input (Most likely text input)\n", 0)
 
-    return (result, count)
+    return (result, amount)
 
 
 
@@ -99,7 +99,7 @@ def fetch_image(driver:webdriver.Chrome, count) -> None:
 
 
 
-def get_table_contents(driver:webdriver.Chrome, count) -> tuple[str, bool]:
+def get_table_contents(driver:webdriver.Chrome, count) -> tuple[str, bool, int]:
     result = ''
 
     try:
@@ -122,13 +122,13 @@ def get_table_contents(driver:webdriver.Chrome, count) -> tuple[str, bool]:
         df = pd.DataFrame(data[1:], columns=data[0])
         
 
-        return (df.to_string(), True)
+        return (df.to_string(), True, len(rows))
 
         
 
 
     except:
-        return (result, False)
+        return (result, False, 0)
     
 
 
@@ -141,10 +141,10 @@ def get_additional_info(driver:webdriver.Chrome, options_amount) -> tuple[str, b
 
         style = """outline: none; user-select: text; white-space: pre-wrap; overflow-wrap: break-word;"""
         WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, f'div [spellcheck="false"][contenteditable="false"][style="{style}"] span[data-text="true"]'))
+            EC.presence_of_element_located((By.CSS_SELECTOR, f'div[class="_8ae271eec1188b7ee372cb8b781a3c19"] div[spellcheck="false"][contenteditable="false"][style="{style}"] span[data-text="true"]'))
         )
 
-        data_fields = driver.find_elements(By.CSS_SELECTOR, f'div [spellcheck="false"][contenteditable="false"][style="{style}"] span[data-text="true"]')
+        data_fields = driver.find_elements(By.CSS_SELECTOR, f'div[class="_8ae271eec1188b7ee372cb8b781a3c19"] div[spellcheck="false"][contenteditable="false"][style="{style}"] span[data-text="true"]')
 
         if len(data_fields) > options_amount:
 

@@ -82,7 +82,7 @@ def get_questions(url):
     while True:
         count+=1
 
-        result += "------------------------------------------\n\n"
+        if count==1: result += "------------------------------------------\n\n"
         
         ### Add question title if possible
         result += get_title(driver, count)
@@ -97,6 +97,10 @@ def get_questions(url):
         ### try to find table; function returns tuple[str, bool] - (result, found_or_not)
         table = get_table_contents(driver, count)
         if table[1]:
+            ## get additional info
+            additional_info = get_additional_info(driver, table[2])
+            if additional_info[1]: result += additional_info[0]
+
             ### add table contents
             result += table[0]
         else:
@@ -129,6 +133,7 @@ def main():
     #url = input("Provide a link to 'Classtime' test: ")
     url = "https://www.classtime.com/code/ZT6MPI" ## history 
     #url = "https://www.classtime.com/code/Q9RAAY" ## geogr
+    #url = "https://www.classtime.com/code/ADTXRM" ##own
     print(get_questions(url))
 
 
