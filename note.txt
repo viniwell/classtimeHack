@@ -1,0 +1,18 @@
+"""
+    ### see if there are questions on the page
+    try:
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, 'span[data-testid="session-student-question-title-sidebar-label"]'))
+        )
+
+    except Exception as e:
+        print(e)
+        input()
+        return "Ensure link is correct."
+    
+    ### get questions on sidebar
+    questions = driver.find_elements(By.CSS_SELECTOR, 'span[data-testid="session-student-question-title-sidebar-label"]')
+
+    result = ''
+    for i in range(len(questions)):
+        result += f'{i+1}. {questions[i].get_attribute("innerHTML")}\n'"""
