@@ -1,10 +1,8 @@
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import sys
-import time
 
 from actions import *
 
@@ -50,12 +48,11 @@ def get_questions(url):
 
     except Exception as e:
         print(e)
-        input()
         return "ERROR: Ensure link is correct."
     
     ### get inputfield and pass the name
     name_field = driver.find_element(By.CSS_SELECTOR, 'input[id*="text-input-"]')
-    name_field.send_keys("error 404") # for less suspicion
+    name_field.send_keys( input("Enter the name, with which you will be taking test(it won't start the test, but teacher will see, that you joined): ") ) # for less suspicion
 
 
     ### see if 'Join' button is on the page
@@ -66,7 +63,6 @@ def get_questions(url):
 
     except Exception as e:
         print(e)
-        input()
         return "ERROR: Ensure link is correct."
     
     ### get inputfield and click it
@@ -82,7 +78,7 @@ def get_questions(url):
     while True:
         count+=1
 
-        if count==1: result += "------------------------------------------\n\n"
+        if count==1: result += "\n\n\n------------------------------------------\n\n"
         
         ### Add question title if possible
         result += get_title(driver, count)
@@ -124,14 +120,11 @@ def get_questions(url):
 
 
 def main():
-    #url = input("Provide a link to 'Classtime' test: ")
-    url = "https://www.classtime.com/code/ZT6MPI" ## history 
-    #url = "https://www.classtime.com/code/Q9RAAY" ## geogr
-    #url = "https://www.classtime.com/code/ADTXRM" ##own
-    print(get_questions(url))
+    if ARGS["path"] == "":
+        ARGS["path"] = input("Provide a link to 'Classtime' test: ")
+        
+    print(get_questions(ARGS["path"]))
 
 
 if __name__ == "__main__":
-    #print(ARGS["images"])
-    #ARGS["images"] = True
     main()

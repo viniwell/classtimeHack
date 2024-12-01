@@ -1,12 +1,15 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import os
+import os, sys
 from pathlib import Path
-import pandas as pd
-from io import StringIO
+from tabulate import tabulate
 from bs4 import BeautifulSoup as bs
+
+
+
 
 
 
@@ -35,7 +38,7 @@ def get_options(driver:webdriver.Chrome, count) -> str:
     result = ''
 
     try:
-        WebDriverWait(driver, 5).until(
+        WebDriverWait(driver, 1).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, 'div[data-testid="questions-answers-list"] span[data-text="true"]'))
         )
 
@@ -47,8 +50,8 @@ def get_options(driver:webdriver.Chrome, count) -> str:
             result += f'     {alphabet[i%27]}) {answer_options[i].get_attribute("innerHTML")}\n'
 
     except:
-        print(f"WARNING: No answer options found for question #{count}")
-        return "      Unknown type of input (Most likely text input)\n"
+        #print(f"WARNING: No answer options found for question #{count}")
+        return "      No answer options\n"
 
     return result
 
@@ -58,12 +61,12 @@ def get_options(driver:webdriver.Chrome, count) -> str:
 def go_to_next_question(driver: webdriver.Chrome) -> bool:
     
     try:
-        WebDriverWait(driver, 2).until(
+        WebDriverWait(driver, 1).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, 'button[data-testid="student-next-question-button"]'))
         )
 
         next_question_button = driver.find_element(By.CSS_SELECTOR, 'button[data-testid="student-next-question-button"]')
-        next_question_button.click()
+        next_question_button.send_keys(Keys.SPACE)
 
     except:
         return False
@@ -73,21 +76,30 @@ def go_to_next_question(driver: webdriver.Chrome) -> bool:
 
 
 
+
+def get_executable_path():
+    if getattr(sys, 'frozen', False):  # Check if the program is bundled into an executable
+        # Get the path to the executable
+        return sys.executable
+    else:
+        # Get the path to the script file
+        return __file__
+
 def fetch_image(driver:webdriver.Chrome, count) -> None:
     try:
-        WebDriverWait(driver, 2).until(
+        WebDriverWait(driver, 1).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, 'img[src*="https://images.classtime.com/gopollock/image/upload/"]'))
         )
 
         image = driver.find_element(By.CSS_SELECTOR, 'img[src*="https://images.classtime.com/gopollock/image/upload/"]')
 
 
-        path = Path(os.path.join(__file__, f"../images/{count}.png")).resolve()
+        path = Path(os.path.join(get_executable_path(), f"../images/{count}.png")).resolve()
         path.parent.mkdir(exist_ok=True, parents=True) # creates directory and file, if there isn't one
 
 
         if not image.screenshot(str(path)):
-            print(f"Failed to save image of question #{count}")
+            print(f"Error: Failed to save image of question #{count}")
 
 
 
@@ -96,12 +108,23 @@ def fetch_image(driver:webdriver.Chrome, count) -> None:
 
 
 
+def resize_cell_text(text):
+    l = len(text)
+    if l>15:
+        i = (l//15)*15
+        while i>0:
+            i-=15
+            text = f'{text[:i]}\n{text[i:]}'
+
+    return text
+
+
 
 def get_table_contents(driver:webdriver.Chrome, count) -> tuple[str, bool]:
     result = ''
 
     try:
-        WebDriverWait(driver, 2).until(
+        WebDriverWait(driver, 1).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, 'div[data-testid="student-categorizer-answers-form"]'))
         )
 
@@ -114,13 +137,10 @@ def get_table_contents(driver:webdriver.Chrome, count) -> tuple[str, bool]:
 
         # Extract data
         rows = table.find_all("tr")
-        data = [[cell.text for cell in row.find_all(["td", "th"])] for row in rows]
-
-        # Convert to DataFrame
-        df = pd.DataFrame(data[1:], columns=data[0])
+        data = [[resize_cell_text(cell.text) for cell in row.find_all(["td", "th"])] for row in rows]
         
 
-        return (df.to_string(), True)
+        return (tabulate(data, tablefmt="grid"), True)
 
         
 
