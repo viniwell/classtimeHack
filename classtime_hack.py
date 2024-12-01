@@ -15,6 +15,19 @@ def parse_args() -> dict:
 
     for arg in sys.argv[1:]:
         if arg == "--images": result["images"] = True
+        elif arg == "--help": 
+            instr = """
+                --help - get instructions
+                --images - save images from test
+                
+                Usage examples:
+                1. classtime_hack --images <url>
+                2. classtime_hack
+                3. classtime_hack <url>
+
+            """
+            print(instr)
+            return None
         else: result["path"] = arg
 
     return result
@@ -54,6 +67,7 @@ def get_questions(url):
     name_field = driver.find_element(By.CSS_SELECTOR, 'input[id*="text-input-"]')
     name_field.send_keys( input("Enter the name, with which you will be taking test(it won't start the test, but teacher will see, that you joined): ") ) # for less suspicion
 
+    print("\n\nFetching questions, it may take a while \n\n")
 
     ### see if 'Join' button is on the page
     try:
@@ -120,10 +134,17 @@ def get_questions(url):
 
 
 def main():
-    if ARGS["path"] == "":
-        ARGS["path"] = input("Provide a link to 'Classtime' test: ")
-        
-    print(get_questions(ARGS["path"]))
+    try:
+
+        if ARGS == None:
+            return None # exit
+        if ARGS["path"] == "":
+            ARGS["path"] = input("Provide a link to 'Classtime' test: ")
+            
+        print(get_questions(ARGS["path"]))
+    
+    except:
+        print("UNEXPECTED ERROR OCCURED!")
 
 
 if __name__ == "__main__":
